@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Караоке</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #e6f7ff 0%, #b3e0ff 50%, #99ccff 100%);
+            color: #2c3e50;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            width: 95%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.2);
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 25px;
+            color: #2980b9;
+            font-weight: 300;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .file-upload-section {
+            background: rgba(173, 216, 230, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px dashed #3498db;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            width: 100%;
+            border: 1px solid #b3e0ff;
+        }
+        .song-info {
+            font-size: 1.4rem;
+            margin: 15px 0;
+            color: #3498db;
+            font-weight: 500;
+            min-height: 40px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 14px 22px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            min-width: 160px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .time-display {
+            font-size: 1.6rem;
+            margin: 15px 0;
+            color: #3498db;
+            font-weight: 500;
+        }
+        .lyrics-container {
+            min-height: 350px;
+            max-height: 450px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            margin: 20px 0;
+            font-size: 2rem;
+            line-height: 1.8;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #b3e0ff;
+            transition: all 0.5s ease;
+        }
+        .lyrics-line {
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 8px 0;
+            opacity: 0.6;
+            transform: scale(0.95);
+        }
+        .current-line {
+            color: #2980b9;
+            font-weight: bold;
+            font-size: 2.4rem;
+            opacity: 1 !important;
+            transform: scale(1.05) !important;
+            text-shadow: 0 0 15px rgba(41, 128, 185, 0.3);
+            margin: 15px 0;
+        }
+        .upcoming-line {
+            color: #3498db;
+            font-size: 2rem;
+            opacity: 0.8;
+            transform: scale(1.02);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .lyrics-container { font-size: 1.7rem; }
+            .current-line { font-size: 2rem; }
+            .upcoming-line { font-size: 1.8rem; }
+            button { font-size: 1.1rem; min-width: 140px; padding: 12px 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Караоке 🎵</h1>
+        
+        <div class="file-upload">
+            
+            <div class="file-upload-section">
+                <p>Загрузи музыку</p>
+                <input type="file" id="audioFile" accept="audio/*">
+            </div>
+            
+            <div class="file-upload-section">
+                <p>Загрузи текст</p>
+                <input type="file" id="lrcFile" accept=".lrc">
+            </div>
+        </div>
+        
+        <div class="song-info" id="songInfo"></div>
+        
+        <div class="controls">
+            <button id="playBtn">▶️</button>
+            <button id="pauseBtn">⏸️</button>
+            <button id="restartBtn">↺</button>
+        </div>
+        
+        <div class="time-display">
+            <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+        </div>
+        
+        <div class="lyrics-container" id="lyricsDisplay">
+            <div class="lyrics-line current-line">Добро пожаловать</div>
+            <div class="lyrics-line upcoming-line">Загрузите музыку и текст</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const audioFileInput = document.getElementById('audioFile');
+            const lrcFileInput = document.getElementById('lrcFile');
+            const playBtn = document.getElementById('playBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            const lyricsDisplay = document.getElementById('lyricsDisplay');
+            const currentTimeEl = document.getElementById('currentTime');
+            const totalTimeEl = document.getElementById('totalTime');
+            const songInfoEl = document.getElementById('songInfo');
+            
+            const audio = new Audio();
+            let lyrics = [];
+            let currentLineIndex = 0;
+            let lyricsInterval;
+            
+            audioFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const objectUrl = URL.createObjectURL(file);
+                    audio.src = objectUrl;
+                    songInfoEl.textContent = `Аудио: ${file.name}`;
+                }
+            });
+            
+            lrcFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        parseLRC(e.target.result);
+                        songInfoEl.textContent += ` | Текст: ${file.name}`;
+                    };
+                    reader.readAsText(file);
+                }
+            });
+            
+            function parseLRC(lrcText) {
+                lyrics = [];
+                const lines = lrcText.split('\n');
+                let songTitle = '';
+                let artist = '';
+                
+                for (const line of lines) {
+                    const tagMatch = line.match(/\[(ti|ar|al):(.+)\]/);
+                    if (tagMatch) {
+                        const tagType = tagMatch[1];
+                        const tagValue = tagMatch[2];
+                        if (tagType === 'ti') songTitle = tagValue;
+                        if (tagType === 'ar') artist = tagValue;
+                        if (songTitle || artist) {
+                            songInfoEl.textContent = `${artist}${artist && songTitle ? ' - ' : ''}${songTitle}`;
+                        }
+                        continue;
+                    }
+                    
+                    const timeMatch = line.match(/\[(\d+):(\d+)\.(\d+)\](.+)/);
+                    if (timeMatch) {
+                        const minutes = parseInt(timeMatch[1]);
+                        const seconds = parseInt(timeMatch[2]);
+                        const hundredths = parseInt(timeMatch[3]);
+                        const text = timeMatch[4].trim();
+                        
+                        if (text) {
+                            const timeInMs = (minutes * 60 + seconds) * 1000 + hundredths * 10;
+                            lyrics.push({
+                                time: timeInMs,
+                                text: text
+                            });
+                        }
+                    }
+                }
+                
+                lyrics.sort((a, b) => a.time - b.time);
+                displayLyrics();
+            }
+            
+            playBtn.addEventListener('click', function() {
+                audio.play();
+                startLyricsSync();
+            });
+            
+            pauseBtn.addEventListener('click', function() {
+                audio.pause();
+                clearInterval(lyricsInterval);
+            });
+            
+            restartBtn.addEventListener('click', function() {
+                audio.currentTime = 0;
+                currentLineIndex = 0;
+                displayLyrics();
+                if (!audio.paused) {
+                    clearInterval(lyricsInterval);
+                    startLyricsSync();
+                }
+            });
+            
+            audio.addEventListener('loadedmetadata', function() {
+                const minutes = Math.floor(audio.duration / 60);
+                const seconds = Math.floor(audio.duration % 60);
+                totalTimeEl.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            });
+            
+            audio.addEventListener('timeupdate', function() {
+                const minutes = Math.floor(audio.currentTime / 60);
+                const seconds = Math.floor(audio.currentTime % 60);
+                currentTimeEl.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            });
+            
+            function displayLyrics() {
+                if (lyrics.length === 0) {
+                    lyricsDisplay.innerHTML = `
+                        <div class="lyrics-line current-line">Загрузите LRC-файл</div>
+                        <div class="lyrics-line upcoming-line">с текстом песни</div>
+                    `;
+                    return;
+                }
+                
+                lyricsDisplay.innerHTML = '';
+                
+                const startIdx = Math.max(0, currentLineIndex - 1);
+                const endIdx = Math.min(lyrics.length, currentLineIndex + 4);
+                
+                for (let i = startIdx; i < endIdx; i++) {
+                    const lineElement = document.createElement('div');
+                    lineElement.textContent = lyrics[i].text;
+                    lineElement.className = 'lyrics-line';
+                    
+                    if (i === currentLineIndex) {
+                        lineElement.classList.add('current-line');
+                    } else if (i > currentLineIndex) {
+                        lineElement.classList.add('upcoming-line');
+                    }
+                    
+                    lineElement.style.animation = `fadeInUp 0.6s ease ${(i - startIdx) * 0.1}s both`;
+                    lyricsDisplay.appendChild(lineElement);
+                }
+                
+                const currentLineElement = lyricsDisplay.querySelector('.current-line');
+                if (currentLineElement) {
+                    currentLineElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+            
+            function startLyricsSync() {
+                clearInterval(lyricsInterval);
+                
+                lyricsInterval = setInterval(() => {
+                    if (audio.paused) {
+                        clearInterval(lyricsInterval);
+                        return;
+                    }
+                    
+                    const currentTimeMs = audio.currentTime * 1000;
+                    let newLineIndex = 0;
+                    
+                    for (let i = 0; i < lyrics.length; i++) {
+                        if (lyrics[i].time <= currentTimeMs) {
+                            newLineIndex = i;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    if (newLineIndex !== currentLineIndex) {
+                        currentLineIndex = newLineIndex;
+                        displayLyrics();
+                    }
+                }, 100);
+            }
+            
+            const demoLrcText = `[00:00.00]Добро пожаловать в караоке
+[00:04.00]Загрузите свою музыку
+[00:08.00]И текст песни в формате LRC
+[00:12.00] 
+[00:16.00]Наслаждайтесь пением
+[00:20.00]Под красивую музыку
+[00:24.00]И прекрасный звук`;
+            
+            parseLRC(demoLrcText);
+        });
+    </script>
+</body>
+</html>
